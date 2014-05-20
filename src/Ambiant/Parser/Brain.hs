@@ -16,8 +16,8 @@ parseBrain brainText = P.parseOnly brain (T.pack brainText)
 hws :: P.Parser ()
 hws = P.skipMany1 $ P.skip P.isHorizontalSpace
 
-skipCommentAndWhitespace :: P.Parser ()
-skipCommentAndWhitespace = do
+commentAndWs :: P.Parser ()
+commentAndWs = do
     P.skipMany $ P.skip P.isHorizontalSpace
     P.choice [ P.char ';' >> P.takeTill P.isEndOfLine >> P.endOfLine >> return ()
              , P.endOfLine >> return ()
@@ -117,7 +117,7 @@ instruction = P.choice [ sense, mark, unmark, pickup, drop, turn, move, flip ]
 
 brain :: P.Parser AntBrain
 brain = do
-    instructions <- P.many' (instruction <* skipCommentAndWhitespace)
+    instructions <- P.many' (instruction <* commentAndWs)
     P.endOfInput `mplus` do
         remain <- P.takeText
         fail $ "expected end of input, remaining: " ++ (T.unpack remain)
