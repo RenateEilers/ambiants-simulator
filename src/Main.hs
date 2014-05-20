@@ -2,6 +2,7 @@
 module Main where
 
 import Ambiant.Cartography
+import Ambiant.Geography
 import Ambiant.Parser.World (parseWorld)
 import Ambiant.Parser.Brain (parseBrain)
 import System.Environment
@@ -14,7 +15,7 @@ main = do
   world         <- liftM parseWorld (readFile worldFile)
   redBrain      <- liftM parseBrain (readFile redBrainFile)
   blackBrain    <- liftM parseBrain (readFile blackBrainFile)
-  print world
+  print $ fmap mkInitialGameState world
   print redBrain
   print blackBrain
   

@@ -13,20 +13,20 @@ import qualified Data.Map as M
 import qualified Data.Text as T
 
 
-parseCell :: P.Parser Cell
+parseCell :: P.Parser CellStart
 parseCell = 
     P.choice [ P.char '#' >> return Rocky
              , P.char '.' >> return (Clear 0)
              , P.char '+' >> return (Anthill Red)
              , P.char '-' >> return (Anthill Black)
-             , P.satisfy oneToNine >>= \food -> return (Clear $ digitToInt food)
+             , P.satisfy oneToNine >>= \food -> return (Clear $ fromIntegral $ digitToInt food)
              ]
     <|> (P.anyChar >>= \c -> fail $ "invalid cell character: '" ++ [c] ++ "'")
   where
     oneToNine :: Char -> Bool
     oneToNine c = c >= '1' && c <= '9'
 
-parseRow :: Int -> P.Parser [(Int, Cell)]
+parseRow :: Int -> P.Parser [(Int, CellStart)]
 parseRow colCount = do
     cells <- P.count colCount (parseCell <* P.skipSpace)
     return $ [0..colCount] `zip` cells
@@ -38,7 +38,7 @@ parseWorld' = do
     rows     <- P.count rowCount $ (parseRow colCount <* P.skipSpace)
     return $ World (rowCount, colCount) (toCellMap $ [0..rowCount] `zip` rows)
   where 
-    toCellMap :: [(Int, [(Int, Cell)])] -> M.Map Pos Cell
+    toCellMap :: [(Int, [(Int, CellStart)])] -> M.Map Pos CellStart
     toCellMap = M.fromList . join .
                 (map (\(row,cols) -> map (\(col, cell) -> ((row, col), cell)) cols))
 

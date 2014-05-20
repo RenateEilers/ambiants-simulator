@@ -1,6 +1,6 @@
 module Ambiant.Cartography
        ( Color(..)
-       , Cell(..)
+       , CellStart(..)
        , Pos
        , Size
        , World(..)
@@ -12,12 +12,12 @@ import qualified Data.Map as M
 data Color = Black | Red
            deriving (Show, Eq)
 
-data Cell = Clear Int
+data CellStart = Clear Integer
           | Rocky
           | Anthill Color
           deriving (Show, Eq)
 
 type Pos = (Int, Int)
 type Size = (Int, Int)
-data World = World Size (M.Map Pos Cell)
+data World = World Size (M.Map Pos CellStart)
            deriving (Show, Eq)
