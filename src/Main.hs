@@ -3,13 +3,18 @@ module Main where
 
 import Ambiant.Cartography
 import Ambiant.Parser.World (parseWorld)
+import Ambiant.Parser.Brain (parseBrain)
 import System.Environment
+import Control.Monad
 
 
 main :: IO () 
 main = do
-  [worldFile] <- getArgs
-  worldDesc <- readFile worldFile 
-  let world = parseWorld worldDesc
+  [worldFile,redBrainFile,blackBrainFile] <- getArgs
+  world         <- liftM parseWorld (readFile worldFile)
+  redBrain      <- liftM parseBrain (readFile redBrainFile)
+  blackBrain    <- liftM parseBrain (readFile blackBrainFile)
   print world
+  print redBrain
+  print blackBrain
   
