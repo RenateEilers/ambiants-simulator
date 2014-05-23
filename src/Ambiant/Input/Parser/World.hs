@@ -1,8 +1,8 @@
-module Ambiant.Parser.World
+module Ambiant.Input.Parser.World
        (parseWorld)
 where
 
-import           Ambiant.Cartography
+import           Ambiant.Input.World
 import           Control.Applicative
 import           Control.Monad
 import           Control.Monad.Error
@@ -35,12 +35,11 @@ parseWorld' :: P.Parser World
 parseWorld' = do
     rowCount <- P.decimal <* P.endOfLine
     colCount <- P.decimal <* P.endOfLine
-    rows     <- P.count rowCount $ (parseRow colCount <* P.skipSpace)
+    rows     <- P.count rowCount $ parseRow colCount <* P.skipSpace
     return $ World (rowCount, colCount) (toCellMap $ [0..rowCount] `zip` rows)
   where 
     toCellMap :: [(Int, [(Int, CellStart)])] -> M.Map Pos CellStart
-    toCellMap = M.fromList . join .
-                (map (\(row,cols) -> map (\(col, cell) -> ((row, col), cell)) cols))
+    toCellMap = M.fromList . join . map (\(row,cols) -> map (\(col, cell) -> ((row, col), cell)) cols)
 
 parseWorld :: String -> Either String World
 parseWorld worldText = P.parseOnly parseWorld' (T.pack worldText)

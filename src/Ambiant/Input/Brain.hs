@@ -1,11 +1,11 @@
-module Ambiant.Neurology
+module Ambiant.Input.Brain
        ( BrainState(..)
        , MarkerId(..)
        , SenseDirection(..)
        , SenseCondition(..)
        , LeftOrRight(..)
        , Instruction(..)
-       , AntBrain
+       , AntBrain(..)
        , mkBrain
        ) where
 
@@ -35,7 +35,7 @@ data SenseCondition = Friend
                     | FoeHome
                     deriving (Show, Eq)
                  
-data LeftOrRight = Left | Right
+data LeftOrRight = LRLeft | LRRight
                  deriving (Show, Eq)
 
 data Instruction = Sense SenseDirection BrainState BrainState SenseCondition
@@ -48,11 +48,8 @@ data Instruction = Sense SenseDirection BrainState BrainState SenseCondition
                  | Flip Int BrainState BrainState
                  deriving (Show, Eq)
 
-newtype AntBrain = AntBrain (M.Map BrainState Instruction)
-                 deriving (Show, Eq)
-
+newtype AntBrain = AntBrain { instructionOf :: BrainState -> Maybe Instruction }
 
 mkBrain :: [Instruction] -> AntBrain
-mkBrain instructions =
-    AntBrain $ M.fromList $ (map BrainState [0..]) `zip` instructions 
-    
+mkBrain instructions = let brainMap = M.fromList $ map BrainState [0..] `zip` instructions 
+                       in  AntBrain $ flip M.lookup brainMap

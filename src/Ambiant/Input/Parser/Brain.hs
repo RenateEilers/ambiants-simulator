@@ -1,11 +1,11 @@
 {-# LANGUAGE FlexibleContexts, OverloadedStrings #-}
-module Ambiant.Parser.Brain
+module Ambiant.Input.Parser.Brain
        ( parseBrain
        ) where
 
-import           Ambiant.Neurology
+import           Ambiant.Input.Brain
 import           Control.Applicative
-import           Control.Monad.Error
+import           Control.Monad
 import qualified Data.Attoparsec.Text as P
 import qualified Data.Text as T
 import           Prelude hiding (Left, Right, drop, flip)
@@ -20,8 +20,8 @@ commentAndWs :: P.Parser ()
 commentAndWs = do
     P.skipMany $ P.skip P.isHorizontalSpace
     P.choice [ P.char ';' >> P.takeTill P.isEndOfLine >> P.endOfLine >> return ()
-             , P.endOfLine >> return ()
-             , P.endOfInput >> return () ]
+             , void P.endOfLine
+             , void P.endOfInput ]
 
 markerId :: P.Parser MarkerId
 markerId = do
@@ -35,6 +35,7 @@ stateId = do
     guard $ n >= 0 && n < 10000
     return $ BrainState n
 
+{-# ANN sense ("HLint: ignore Use liftM"::String) #-}
 sense :: P.Parser Instruction
 sense = do 
     P.string "Sense" >> hws
@@ -86,8 +87,8 @@ drop = do
 
 leftOrRight :: P.Parser LeftOrRight
 leftOrRight =
-    P.choice [ P.string "Left" >> return Left
-             , P.string "Right" >> return Right ]
+    P.choice [ P.string "Left"  >> return LRLeft
+             , P.string "Right" >> return LRRight ]
 
 turn :: P.Parser Instruction
 turn = do
@@ -115,11 +116,12 @@ flip = do
 instruction :: P.Parser Instruction
 instruction = P.choice [ sense, mark, unmark, pickup, drop, turn, move, flip ]
 
-brain :: P.Parser AntBrain
+brain :: P.Parser
+         AntBrain
 brain = do
     instructions <- P.many' (instruction <* commentAndWs)
     P.endOfInput `mplus` do
         remain <- P.takeText
-        fail $ "expected end of input, remaining: " ++ (T.unpack remain)
+        fail $ "expected end of input, remaining: " ++ T.unpack remain
     return $ mkBrain instructions
 
