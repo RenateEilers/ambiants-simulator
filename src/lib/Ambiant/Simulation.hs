@@ -1,7 +1,7 @@
 {-# LANGUAGE FlexibleContexts, RankNTypes #-}
 module Ambiant.Simulation
        ( module Ambiant.Simulation.Types
-       , runSimulation
+       , module Ambiant.Simulation.Engine
        ) where
 
 import Ambiant.Simulation.Engine (runSimulation)

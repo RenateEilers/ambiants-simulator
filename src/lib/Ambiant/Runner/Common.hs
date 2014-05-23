@@ -1,17 +1,17 @@
-{-# LANGUAGE FlexibleContexts #-}
-module Main where
+module Ambiant.Runner.Common
+       ( runner
+       ) where
 
-import Ambiant.Input (parseBrain, parseWorld)
-import Ambiant.Runner.Console
-import Ambiant.Simulation (runSimulation)
-import Control.Monad
-import Control.Monad.Trans.Iter as I
-import Control.Monad.Writer
-import System.Environment
+import           Ambiant.Input.Parser.Brain (parseBrain)
+import           Ambiant.Input.Parser.World (parseWorld)
+import           Ambiant.Simulation (runSimulation, GameTrace)
+import           Control.Monad (liftM)
+import qualified Control.Monad.Trans.Iter as I
+import           Control.Monad.Writer (Writer, runWriter)
 
-main :: IO () 
-main = do
-  [worldFile,redBrainFile,blackBrainFile,roundsArg] <- getArgs
+runner :: [String] -> ([GameTrace] -> IO ()) -> IO ()
+runner args stepProcessor = do
+  let [worldFile,redBrainFile,blackBrainFile,roundsArg] = args
   world         <- liftM parseWorld (readFile worldFile)
   redBrain      <- liftM parseBrain (readFile redBrainFile)
   blackBrain    <- liftM parseBrain (readFile blackBrainFile)
@@ -27,8 +27,7 @@ main = do
   case parsed of 
       Left err -> putStrLn $ "Error while parsing input: " ++ err
       Right (w,rb,bb) -> do
-          let simulation = cutoff rounds $ runSimulation w rb bb 
-              stepProcessor = renderTraces 
+          let simulation = I.cutoff rounds $ runSimulation w rb bb 
               step = takeStep stepProcessor
           result <- I.foldM step simulation
           case result of
@@ -40,4 +39,3 @@ main = do
 takeStep :: (Monad m) => (w -> m ()) -> Writer w (m a) -> m a
 takeStep k step = let (a, w) = runWriter step
                   in  k w >> a
-
