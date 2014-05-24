@@ -38,75 +38,76 @@ stateId = do
 {-# ANN sense ("HLint: ignore Use liftM"::String) #-}
 sense :: P.Parser Instruction
 sense = do 
-    P.string "Sense" >> hws
-    senseDir <- P.choice [ P.string "Here" >> return Here
-                         , P.string "Ahead" >> return Ahead
-                         , P.string "LeftAhead" >> return LeftAhead
-                         , P.string "RightAhead" >> return RightAhead
+    P.asciiCI "Sense" >> hws
+    senseDir <- P.choice [ P.asciiCI "Here" >> return Here
+                         , P.asciiCI "Ahead" >> return Ahead
+                         , P.asciiCI "LeftAhead" >> return LeftAhead
+                         , P.asciiCI "RightAhead" >> return RightAhead
                          ] <* hws
     st1 <- stateId <* hws
     st2 <- stateId <* hws
-    cond <- P.choice [ P.string "Friend" >> return Friend
-                     , P.string "Foe" >> return Foe
-                     , P.string "FriendWithFood" >> return FriendWithFood
-                     , P.string "FoeWithFood" >> return FoeWithFood
-                     , P.string "Food" >> return Food
-                     , P.string "Rock" >> return Rock
-                     , P.string "Marker" >> hws >> markerId >>= return . Marker
-                     , P.string "Home" >> return Home
-                     , P.string "FoeHome" >> return FoeHome
+    cond <- P.choice [ P.asciiCI "FriendWithFood" >> return FriendWithFood
+                     , P.asciiCI "Friend" >> return Friend
+                     , P.asciiCI "FoeHome" >> return FoeHome
+                     , P.asciiCI "FoeWithFood" >> return FoeWithFood
+                     , P.asciiCI "FoeMarker" >> return FoeMarker
+                     , P.asciiCI "Foe" >> return Foe
+                     , P.asciiCI "Food" >> return Food
+                     , P.asciiCI "Rock" >> return Rock
+                     , P.asciiCI "Marker" >> hws >> markerId >>= return . Marker
+                     , P.asciiCI "Home" >> return Home
                      ]
     return $ Sense senseDir st1 st2 cond
 
 mark :: P.Parser Instruction
 mark = do
-    P.string "Mark" >> hws
+    P.asciiCI "Mark" >> hws
     mId <- markerId <* hws
     sId <- stateId
     return $ Mark mId sId
 
 unmark :: P.Parser Instruction
 unmark = do
-    P.string "Unmark" >> hws
+    P.asciiCI "Unmark" >> hws
     mId <- markerId <* hws
     sId <- stateId
     return $ Unmark mId sId
 
 pickup :: P.Parser Instruction
 pickup = do
-    P.string "PickUp" >> hws
+    P.asciiCI "PickUp" >> hws
     st1 <- stateId <* hws
     st2 <- stateId
     return $ PickUp st1 st2
 
 drop :: P.Parser Instruction
 drop = do
-    P.string "Drop" >> hws
+    P.asciiCI "Drop" >> hws
     st <- stateId
     return $ Drop st
 
 leftOrRight :: P.Parser LeftOrRight
 leftOrRight =
-    P.choice [ P.string "Left"  >> return LRLeft
-             , P.string "Right" >> return LRRight ]
+    P.choice [ P.asciiCI "Left"  >> return LRLeft
+             , P.asciiCI "Right" >> return LRRight ]
 
 turn :: P.Parser Instruction
 turn = do
-    P.string "Turn" >> hws
+    P.asciiCI "Turn" >> hws
     lr <- leftOrRight <* hws
     st <- stateId
     return $ Turn lr st
 
 move :: P.Parser Instruction
 move = do
-    P.string "Move" >> hws
+    P.asciiCI "Move" >> hws
     st1 <- stateId <* hws
     st2 <- stateId
     return $ Move st1 st2
 
 flip :: P.Parser Instruction
 flip = do
-    P.string "Flip" >> hws
+    P.asciiCI "Flip" >> hws
     p <- P.decimal <* hws
     guard $ p > 0
     st1 <- stateId <* hws

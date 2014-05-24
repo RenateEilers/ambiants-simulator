@@ -9,6 +9,9 @@ import           Control.Monad (liftM)
 import qualified Control.Monad.Trans.Iter as I
 import           Control.Monad.Writer (Writer, runWriter)
 
+data SimluationRun = Bounded Integer
+                   | Infinity
+
 runner :: [String] -> ([GameTrace] -> IO ()) -> IO ()
 runner args stepProcessor = do
   let [worldFile,redBrainFile,blackBrainFile,roundsArg] = args
@@ -22,16 +25,19 @@ runner args stepProcessor = do
           bb <- blackBrain
           return (w,rb,bb)
 
-      rounds = read roundsArg
+      runLength = if roundsArg == "inf" then Infinity else Bounded (read roundsArg)
 
   case parsed of 
       Left err -> putStrLn $ "Error while parsing input: " ++ err
       Right (w,rb,bb) -> do
-          let simulation = I.cutoff rounds $ runSimulation w rb bb 
+          let fullSimulation = runSimulation w rb bb 
+              simulation = case runLength of
+                  Bounded rounds -> I.cutoff rounds fullSimulation
+                  Infinity -> fmap Just fullSimulation
               step = takeStep stepProcessor
           result <- I.foldM step simulation
           case result of
-              Nothing -> putStrLn $ "Simulation still running after " ++ show rounds ++ " rounds"
+              Nothing -> putStrLn $ "Simulation still running after " ++ roundsArg ++" rounds"
               Just (Left err) -> putStrLn $ "Error during simulation: " ++ err
               Just (Right traces) -> do stepProcessor traces
                                         putStrLn "Simulation ended"

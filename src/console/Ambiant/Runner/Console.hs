@@ -13,16 +13,16 @@ import           Data.Maybe
 
 render :: GameState -> String
 render gs =
-    let rows = do x <- [0..maxy]
-                  return $ renderRow x
+    let rows = do y <- [0..maxy]
+                  return $ renderRow y
     in  intercalate "\n" rows
   where
     (maxx, maxy) = maximum $ M.keys (gs^.gsCells)
 
     renderRow :: Int -> String
-    renderRow x = let cells = do y <- [0..maxy]
+    renderRow y = let cells = do x <- [0..maxx]
                                  return $ renderCell x y
-                      prefix = if odd x then " " else ""
+                      prefix = if odd y then " " else ""
                   in  prefix ++ unwords cells
 
     renderCell :: Int -> Int -> String

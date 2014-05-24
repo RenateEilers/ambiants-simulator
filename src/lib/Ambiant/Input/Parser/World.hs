@@ -5,7 +5,6 @@ where
 import           Ambiant.Input.World
 import           Control.Applicative
 import           Control.Monad
-import           Control.Monad.Error
 import           Data.Attoparsec.Text ((<?>))
 import qualified Data.Attoparsec.Text as P
 import           Data.Char (digitToInt)
@@ -39,7 +38,7 @@ parseWorld' = do
     return $ World (rowCount, colCount) (toCellMap $ [0..rowCount] `zip` rows)
   where 
     toCellMap :: [(Int, [(Int, CellStart)])] -> M.Map Pos CellStart
-    toCellMap = M.fromList . join . map (\(row,cols) -> map (\(col, cell) -> ((row, col), cell)) cols)
+    toCellMap = M.fromList . join . map (\(row,cols) -> map (\(col, cell) -> ((col, row), cell)) cols)
 
 parseWorld :: String -> Either String World
 parseWorld worldText = P.parseOnly parseWorld' (T.pack worldText)
