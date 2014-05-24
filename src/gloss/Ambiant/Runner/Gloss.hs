@@ -1,4 +1,3 @@
-{-# LANGUAGE ViewPatterns #-}
 module Ambiant.Runner.Gloss
        ( start )
        where
@@ -11,11 +10,11 @@ import           Control.Concurrent.MVar (tryTakeMVar, putMVar, newEmptyMVar, MV
 import           Control.Lens ((^.))
 import           Control.Monad (forM_, void)
 import qualified Data.Map as M
-import           Graphics.Gloss ( blank, circle, circleSolid, pictures, line, polygon,
+import           Graphics.Gloss ( blank, circleSolid, pictures, line, polygon,
                                   makeColor, 
                                   color, translate, scale, rotate,
-                                  light, dark, dim, bright,
-                                  white, black, red, greyN, yellow, 
+                                  light, dark,
+                                  black, red,
                                   Picture(..), Display(..), Point )
 import qualified Graphics.Gloss as G
 import           Graphics.Gloss.Interface.IO.Animate (animateIO)
@@ -26,7 +25,7 @@ start = do
 
     void $ forkIO $
       animateIO (InWindow "Window Title" (600, 400) (0, 0))
-                (G.yellow)
+                G.yellow
                 (const $ renderState nextState)
 
     
@@ -55,7 +54,7 @@ radius :: Float
 radius = 10
 
 dx :: Float
-dx = radius * (sqrt 3)
+dx = radius * sqrt 3
 
 dy :: Float
 dy = 1.5 * radius
@@ -76,9 +75,9 @@ drawCell ((x,y), cell) =
         fill =
             case cell^.cellType of
                 Clear -> blank
-                Rocky         -> color (dark $ dark $ G.yellow)  $ hexSolid (radius / 1.3)
-                Anthill Red   -> color (light $ light $ light $ red)   $ hexSolid (radius / 1.3)
-                Anthill Black -> color (light $ light $ light $ black) $ hexSolid (radius / 1.3)
+                Rocky         -> color (dark $ dark G.yellow)        $ hexSolid (radius / 1.3)
+                Anthill Red   -> color (light $ light $ light red)   $ hexSolid (radius / 1.3)
+                Anthill Black -> color (light $ light $ light black) $ hexSolid (radius / 1.3)
 
     ant = case cell^.cellAnt of
         Nothing -> blank
@@ -88,7 +87,7 @@ drawCell ((x,y), cell) =
                                           W -> 3; NW -> 4; NE -> 5)
             in  rotate r $
                 pictures $
-                [ color c $ pictures $
+                color c ( pictures $
                   [ translate 0 (-radius/3.5) $ circleSolid (radius/4)
                   , scale 0.3 1 $ circleSolid (radius/2)
                   , translate 0 (radius/3) $ pictures
@@ -96,7 +95,7 @@ drawCell ((x,y), cell) =
                     , rotate (-30) $ line [(0,0), (0, radius/3)]
                     , rotate   30  $ line [(0,0), (0, radius/3)] ]
                   ] ++ legs 
-                ] ++ [carriedFood]
+                ) : [carriedFood]
           where
             legs = map (\d -> rotate d $ scale 0.5 0.5 $ line [(radius,0), (-radius,0)])
                    [-25, 0, 25]
@@ -110,14 +109,14 @@ drawCell ((x,y), cell) =
 foodParticle :: Integer -> Picture
 foodParticle 0 = blank
 foodParticle foodAmount =
-    let pileRadius = min 0.9 ((sqrt $ fromIntegral foodAmount)/8.0)
+    let pileRadius = min 0.9 (sqrt (fromIntegral foodAmount)/8.0)
     in  color (dark G.green) $ circleSolid (radius * pileRadius)
 
 hex :: Float -> Picture
-hex radius = scale radius radius $ line hexPoints
+hex r = scale r r $ line hexPoints
             
 hexSolid :: Float -> Picture
-hexSolid radius = scale radius radius $ polygon hexPoints
+hexSolid r = scale r r $ polygon hexPoints
 
 hexPoints :: [Point]
 hexPoints = map (\d -> let r = d*pi/3 in (sin r, cos r)) [0..6] 
