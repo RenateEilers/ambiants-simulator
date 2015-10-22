@@ -139,12 +139,12 @@ instructionStep (a,p) (Move st1 st2) = do
     let newp = adjacentCell p (a^.antFacing)
     newc <- useCellAt newp
     if (newc^.cellType) == Rocky || isJust (newc^.cellAnt)
-      then antAt p.antState .= st1
+      then antAt p.antState .= st2
       else do cellAt p.cellAnt .= Nothing
               cellAt newp.cellAnt .= Just a
               gsAntPos.ix (a^.antId) .= newp
               zoom (antAt newp) $ do
-                  antState .= st2
+                  antState .= st1
                   antResting .= 14
               checkForSurroundedAnts newp
     
